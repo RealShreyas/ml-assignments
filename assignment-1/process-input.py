@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import OneHotEncoder
-from sklearn.preprocessing import LabelEncoder
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.metrics import mean_squared_error
 
 def process_input():
     df = pd.read_csv("C:\\Users\\manasvi\\Downloads\\AggregatedCountriesCOVIDStats.csv")
@@ -30,16 +30,16 @@ def process_input():
     # print(X)
     y = df.iloc[:, -1].values     #output is "No. of deaths" (last attribute)
     # print(y)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)  #Random 80-20 split into train and test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42)  #Random 80-20 split into train and test
     #Since pandas dataframes are easier to deal with than ndarrays, we will convert back to dataframe
     X_train = pd.DataFrame(X_train)
     #X_train.columns = ["Country","Date_month","Confirmed","Recovered"]
     X_test = pd.DataFrame(X_test)
     #X_test.columns = ["Country","Date_month","Confirmed","Recovered"]
     y_train = pd.DataFrame(y_train)
-    #y_train.columns = ["Deaths"]
+    y_train.columns = ["Deaths"]
     y_test = pd.DataFrame(y_test)
-    #y_test.columns = ["Deaths"]
+    y_test.columns = ["Deaths"]
     # print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
     return X_train, X_test, y_train, y_test
 
@@ -48,3 +48,16 @@ def process_input():
 
 X_train, X_test, y_train, y_test = process_input()
 print(X_train)
+
+regr_1 = DecisionTreeRegressor()
+regr_1.fit(X_train,y_train)
+predictions = regr_1.predict(X_train)
+print(mean_squared_error(y_train, predictions)) #training error is 0 - but test error is large, model has overfitted
+
+
+y_pred = regr_1.predict(X_test)
+predicted_output = y_pred.tolist()
+actual_output = y_test['Deaths'].tolist()
+mse = np.square(np.subtract(predicted_output, actual_output)).mean()
+rmse = np.sqrt(mse)
+print(rmse)   #root mean squared error on test
