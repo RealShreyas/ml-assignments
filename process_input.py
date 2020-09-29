@@ -1,0 +1,50 @@
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.preprocessing import LabelEncoder
+
+def process_input():
+    df = pd.read_csv("AggregatedCountriesCOVIDStats.csv")   #add this file to directory
+    df['Date'] = pd.to_datetime(df['Date'], errors='coerce') #converting date to a pandas datetime format
+    df['Date_month'] = df['Date'].dt.month #extracting month from date
+    df['Date_day'] = df['Date'].dt.day
+    cols = df.columns.tolist()
+    cols = cols[-1:] + cols[:-1]     #rearranging columns of dataframe
+    df = df[cols]
+    del df["Date"]      #deleting date column, will keep only month (can additionally keep days also?)
+    ohe = pd.get_dummies(df['Country'],prefix='Country')
+    df = df.join(ohe)
+    del df["Country"]
+    new_deaths = df['Deaths']
+    del df['Deaths']
+    df = df.join(new_deaths)
+    print(df.head())
+    #
+    #cols = df.columns.tolist()
+    #cols = cols[-1:] + cols[:-1]  # rearranging columns of dataframe
+    #df = df[cols]
+    print(df.columns)
+    # print(df.var())
+    X = df.iloc[:, :-1].values    #defining input as all but last attribute
+    # print(X)
+    y = df.iloc[:, -1].values     #output is "No. of deaths" (last attribute)
+    # print(y)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)  #Random 80-20 split into train and test
+    #Since pandas dataframes are easier to deal with than ndarrays, we will convert back to dataframe
+    X_train = pd.DataFrame(X_train)
+    #X_train.columns = ["Country","Date_month","Confirmed","Recovered"]
+    X_test = pd.DataFrame(X_test)
+    #X_test.columns = ["Country","Date_month","Confirmed","Recovered"]
+    y_train = pd.DataFrame(y_train)
+    #y_train.columns = ["Deaths"]
+    y_test = pd.DataFrame(y_test)
+    #y_test.columns = ["Deaths"]
+    # print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+    return X_train, X_test, y_train, y_test
+
+
+
+
+X_train, X_test, y_train, y_test = process_input()
+print(X_train)
