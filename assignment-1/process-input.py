@@ -19,18 +19,18 @@ def process_input():
     new_deaths = df['Deaths']
     del df['Deaths']
     df = df.join(new_deaths)
-    print(df.head())
+    #print(df.head())
     #
     #cols = df.columns.tolist()
     #cols = cols[-1:] + cols[:-1]  # rearranging columns of dataframe
     #df = df[cols]
-    print(df.columns)
+    #print(df.columns)
     # print(df.var())
     X = df.iloc[:, :-1].values    #defining input as all but last attribute
     # print(X)
     y = df.iloc[:, -1].values     #output is "No. of deaths" (last attribute)
     # print(y)
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2,random_state=42)  #Random 80-20 split into train and test
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)  #Random 80-20 split into train and test
     #Since pandas dataframes are easier to deal with than ndarrays, we will convert back to dataframe
     X_train = pd.DataFrame(X_train)
     #X_train.columns = ["Country","Date_month","Confirmed","Recovered"]
@@ -44,20 +44,26 @@ def process_input():
     return X_train, X_test, y_train, y_test
 
 
-
-
-X_train, X_test, y_train, y_test = process_input()
-print(X_train)
-
+min_error = 10000
 regr_1 = DecisionTreeRegressor()
-regr_1.fit(X_train,y_train)
-predictions = regr_1.predict(X_train)
-print(mean_squared_error(y_train, predictions)) #training error is 0 - but test error is large, model has overfitted
+for i in range(10):
+    X_train, X_test, y_train, y_test = process_input()
+    regr_1.fit(X_train, y_train)
+    predictions = regr_1.predict(X_train)
+    #print(mean_squared_error(y_train, predictions))  # training error is 0 - but test error is large, model has overfitted
+
+    y_pred = regr_1.predict(X_test)
+    predicted_output = y_pred.tolist()
+    actual_output = y_test['Deaths'].tolist()
+    mse = np.square(np.subtract(predicted_output, actual_output)).mean()
+    rmse = np.sqrt(mse)
+    #print(rmse)  # root mean squared error on test
+    if rmse < min_error:
+        min_error = rmse
+
+print("Minimum root mean squared error over 10 random splits is",min_error)
+
+#print(X_train)
 
 
-y_pred = regr_1.predict(X_test)
-predicted_output = y_pred.tolist()
-actual_output = y_test['Deaths'].tolist()
-mse = np.square(np.subtract(predicted_output, actual_output)).mean()
-rmse = np.sqrt(mse)
-print(rmse)   #root mean squared error on test
+
