@@ -3,7 +3,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
-
+from sklearn.metrics import r2_score
+from sklearn import tree
 def process_input():
     df = pd.read_csv("C:\\Users\\manasvi\\Downloads\\AggregatedCountriesCOVIDStats.csv")
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce') #converting date to a pandas datetime format
@@ -45,7 +46,7 @@ def process_input():
 
 
 min_error = 10000
-regr_1 = DecisionTreeRegressor()
+regr_1 = DecisionTreeRegressor(random_state=0)
 for i in range(10):
     X_train, X_test, y_train, y_test = process_input()
     regr_1.fit(X_train, y_train)
@@ -57,11 +58,13 @@ for i in range(10):
     actual_output = y_test['Deaths'].tolist()
     mse = np.square(np.subtract(predicted_output, actual_output)).mean()
     rmse = np.sqrt(mse)
+    print(r2_score(predicted_output,actual_output))
     #print(rmse)  # root mean squared error on test
     if rmse < min_error:
         min_error = rmse
 
 print("Minimum root mean squared error over 10 random splits is",min_error)
+
 
 #print(X_train)
 
