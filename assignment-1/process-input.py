@@ -3,9 +3,11 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from matplotlib import pyplot as plt
 
 def process_input():
-    df = pd.read_csv("C:\\Users\\manasvi\\Downloads\\AggregatedCountriesCOVIDStats.csv")
+    df = pd.read_csv("AggregatedCountriesCOVIDStats.csv")
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce') #converting date to a pandas datetime format
     df['Date_month'] = df['Date'].dt.month #extracting month from date
     df['Date_day'] = df['Date'].dt.day
@@ -43,27 +45,41 @@ def process_input():
     # print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
     return X_train, X_test, y_train, y_test
 
+# All possible depth
+depths = []
+# Best accuracy at the corresponding depth
+accuracy = []
 
-min_error = 10000
-regr_1 = DecisionTreeRegressor()
-for i in range(10):
-    X_train, X_test, y_train, y_test = process_input()
-    regr_1.fit(X_train, y_train)
-    predictions = regr_1.predict(X_train)
-    #print(mean_squared_error(y_train, predictions))  # training error is 0 - but test error is large, model has overfitted
+for j in range(90,120):
+    #min_error = 10000
+    # Best score over 10 splits
+    current_score_global = 0
+    # Regression tree with max depth set
+    regr_1 = DecisionTreeRegressor(max_depth=j)
+    for i in range(10):
+        X_train, X_test, y_train, y_test = process_input()
+        regr_1.fit(X_train, y_train)
+        predictions = regr_1.predict(X_train)
 
-    y_pred = regr_1.predict(X_test)
-    predicted_output = y_pred.tolist()
-    actual_output = y_test['Deaths'].tolist()
-    mse = np.square(np.subtract(predicted_output, actual_output)).mean()
-    rmse = np.sqrt(mse)
-    #print(rmse)  # root mean squared error on test
-    if rmse < min_error:
-        min_error = rmse
+        y_pred = regr_1.predict(X_test)
+        predicted_output = y_pred.tolist()
+        actual_output = y_test['Deaths'].tolist()
+        
+        # Best score for the current split
+        current_score_local = r2_score(actual_output, predicted_output)
+        if current_score_local > current_score_global:
+            current_score_global = current_score_local
+        
+        depths.append(j)
+        accuracy.append(current_score_global*100)
 
-print("Minimum root mean squared error over 10 random splits is",min_error)
-
-#print(X_train)
-
-
-
+# Adds the line in the graph
+plt.plot(depths, accuracy)
+# Adds a grid to the plot
+plt.grid() 
+# X-axis label
+plt.ylabel('Accuracy') 
+# Y-axis label
+plt.xlabel('Depth')
+# Export the plot
+plt.savefig('accuracy.png')
