@@ -6,7 +6,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn import tree
 def process_input():
-    df = pd.read_csv("C:\\Users\\manasvi\\Downloads\\AggregatedCountriesCOVIDStats.csv")
+    df = pd.read_csv("AggregatedCountriesCOVIDStats.csv")
     df['Date'] = pd.to_datetime(df['Date'], errors='coerce') #converting date to a pandas datetime format
     df['Date_month'] = df['Date'].dt.month #extracting month from date
     df['Date_day'] = df['Date'].dt.day
