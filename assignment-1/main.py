@@ -6,12 +6,11 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor
-#from decision_tree import RegressionTree
+from sklearn.tree._tree import TREE_LEAF
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from matplotlib import pyplot as plt
 from sklearn import tree
-
 
 #process input as pandas dataframe
 def process_input():
