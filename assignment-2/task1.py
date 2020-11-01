@@ -13,7 +13,6 @@ from model import NaiveBayesClassifier
 from model import return_score
 
 
-
 #Handling missing attributes
 occupation = pd.read_csv("Train_A.csv").dropna()
 occupation = occupation.reset_index(drop='True')
@@ -24,41 +23,20 @@ del occupation['ID']
 label_encoder = preprocessing.LabelEncoder()
 
 
-#One hot encoding the categorical variables-
-ohe = pd.get_dummies(occupation['Gender'],prefix='Gender')
-occupation = occupation.join(ohe)
-del occupation['Gender']
+occupation["Gender"] = label_encoder.fit_transform(occupation["Gender"])
 
 
-ohe = pd.get_dummies(occupation['Ever_Married'],prefix='Ever_Married')
-occupation = occupation.join(ohe)
-del occupation['Ever_Married']
+occupation["Ever_Married"] = label_encoder.fit_transform(occupation["Ever_Married"])
 
 
-
-ohe = pd.get_dummies(occupation['Profession'],prefix='Profession')
-occupation = occupation.join(ohe)
-del occupation['Profession']
+occupation["Profession"] = label_encoder.fit_transform(occupation["Profession"])
 
 
+occupation["Graduated"] = label_encoder.fit_transform(occupation["Graduated"])
 
+occupation["Spending_Score"] = label_encoder.fit_transform(occupation["Spending_Score"])
 
-ohe = pd.get_dummies(occupation['Graduated'],prefix='Graduated')
-occupation = occupation.join(ohe)
-del occupation['Graduated']
-
-
-
-ohe = pd.get_dummies(occupation['Spending_Score'],prefix='Spending_Score')
-occupation = occupation.join(ohe)
-del occupation['Spending_Score']
-
-
-
-ohe = pd.get_dummies(occupation['Var_1'],prefix='Var_1')
-occupation = occupation.join(ohe)
-del occupation['Var_1']
-
+occupation["Var_1"] = label_encoder.fit_transform(occupation["Var_1"])
 
 occupation["Segmentation"] = label_encoder.fit_transform(occupation["Segmentation"])
 

@@ -12,6 +12,7 @@ from sklearn.decomposition import PCA
 from model import NaiveBayesClassifier
 from model import return_score
 
+
 #Handling missing attributes
 occupation = pd.read_csv("Train_A.csv").dropna()
 occupation = occupation.reset_index(drop='True')
@@ -19,46 +20,25 @@ occupation = occupation.reset_index(drop='True')
 #ID does not contribute to predicting segmentation
 del occupation['ID']
 
-label_encoder = preprocessing.LabelEncoder()
-
 head = list(occupation.columns)
 
-
-#One hot encoding the categorical variables-
-ohe = pd.get_dummies(occupation['Gender'],prefix='Gender')
-occupation = occupation.join(ohe)
-del occupation['Gender']
+label_encoder = preprocessing.LabelEncoder()
 
 
-ohe = pd.get_dummies(occupation['Ever_Married'],prefix='Ever_Married')
-occupation = occupation.join(ohe)
-del occupation['Ever_Married']
+occupation["Gender"] = label_encoder.fit_transform(occupation["Gender"])
 
 
-
-ohe = pd.get_dummies(occupation['Profession'],prefix='Profession')
-occupation = occupation.join(ohe)
-del occupation['Profession']
+occupation["Ever_Married"] = label_encoder.fit_transform(occupation["Ever_Married"])
 
 
+occupation["Profession"] = label_encoder.fit_transform(occupation["Profession"])
 
 
-ohe = pd.get_dummies(occupation['Graduated'],prefix='Graduated')
-occupation = occupation.join(ohe)
-del occupation['Graduated']
+occupation["Graduated"] = label_encoder.fit_transform(occupation["Graduated"])
 
+occupation["Spending_Score"] = label_encoder.fit_transform(occupation["Spending_Score"])
 
-
-ohe = pd.get_dummies(occupation['Spending_Score'],prefix='Spending_Score')
-occupation = occupation.join(ohe)
-del occupation['Spending_Score']
-
-
-
-ohe = pd.get_dummies(occupation['Var_1'],prefix='Var_1')
-occupation = occupation.join(ohe)
-del occupation['Var_1']
-
+occupation["Var_1"] = label_encoder.fit_transform(occupation["Var_1"])
 
 occupation["Segmentation"] = label_encoder.fit_transform(occupation["Segmentation"])
 
