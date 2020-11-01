@@ -128,3 +128,47 @@ plt.xlabel('Depth')
 plt.savefig('error.png')
 
 
+## The below code contains pruning the decision tree
+
+regr = DecisionTreeRegressor(max_depth=10)
+X_train, X_test, y_train, y_test = process_input()
+# This is the function which returns ccp alphas and impurity of leaves
+path = regr.cost_complexity_pruning_path(X_train, y_train)
+
+# This will store the alphas and their corresponding impurities
+ccp_alphas, impurities = path.ccp_alphas, path.impurities
+
+plt.figure(figsize=(10, 6))
+plt.plot(ccp_alphas, impurities)
+plt.xlabel("Effective alpha")
+plt.ylabel("Total Impurity of Leaves")
+plt.savefig('AlphavsImpurity.png')
+
+regrs = []
+
+# Build trees based on different CCP values
+for ccp_alpha in ccp_alphas:
+    regr = DecisionTreeRegressor(random_state=0, ccp_alpha=ccp_alpha, max_depth=10)
+    regr.fit(X_train, y_train)
+    regrs.append(regr)
+
+# Plot of the alpha values compared to depth
+tree_depths = [regr.tree_.max_depth for regr in regrs]
+plt.figure(figsize=(10,  6))
+plt.plot(ccp_alphas[:-1], tree_depths[:-1])
+plt.xlabel("Effective Alpha")
+plt.ylabel("Total Depth")
+plt.savefig('AlphavsDepth.png')
+
+# Compare the accuracy of the generated trees
+acc_scores = [r2_score(y_test, regr.predict(X_test)) for regr in regrs]
+
+# Plot of accuracy at different alpha values. The alpha values which gives the highest accuracy 
+# will then be used for pruning
+tree_depths = [regr.tree_.max_depth for regr in regrs]
+plt.figure(figsize=(10,  6))
+plt.grid()
+plt.plot(ccp_alphas[:-1], acc_scores[:-1])
+plt.xlabel("Effective Alpha")
+plt.ylabel("R2 scores")
+plt.savefig('R2vsAlpha.png')
