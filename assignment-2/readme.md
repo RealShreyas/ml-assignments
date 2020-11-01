@@ -1,0 +1,1 @@
+### The folder contains three files namely task1, task2 and task3 each of which on running individually will output the task given. The libraries numpy, pandas, sklearn and matplotlib must be installed for the code to run. The file model.py contains the implementation of Naive Bayes Classifier from scratch 

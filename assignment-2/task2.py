@@ -1,0 +1,125 @@
+import numpy as np
+import pandas as pd
+import seaborn as sn
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
+from sklearn import preprocessing
+from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.metrics import r2_score, accuracy_score
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import StandardScaler
+import statistics
+from sklearn.decomposition import PCA
+from model import NaiveBayesClassifier
+from model import return_score
+
+
+
+#Handling missing attributes
+occupation = pd.read_csv("Train_A.csv").dropna()
+occupation = occupation.reset_index(drop='True')
+
+#ID does not contribute to predicting segmentation
+del occupation['ID']
+
+label_encoder = preprocessing.LabelEncoder()
+
+
+occupation["Gender"] = label_encoder.fit_transform(occupation["Gender"])
+
+
+occupation["Ever_Married"] = label_encoder.fit_transform(occupation["Ever_Married"])
+
+
+occupation["Profession"] = label_encoder.fit_transform(occupation["Profession"])
+
+
+occupation["Graduated"] = label_encoder.fit_transform(occupation["Graduated"])
+
+occupation["Spending_Score"] = label_encoder.fit_transform(occupation["Spending_Score"])
+
+occupation["Var_1"] = label_encoder.fit_transform(occupation["Var_1"])
+
+occupation["Segmentation"] = label_encoder.fit_transform(occupation["Segmentation"])
+
+
+occupation = occupation[ [ col for col in occupation.columns if col != 'Segmentation' ] + ['Segmentation'] ]
+
+
+#80-20 split of data into training and test sets.
+df_train, df_test = train_test_split(occupation,test_size=0.2)
+df2 = df_train.reset_index(drop=True)
+df3 = df_test.reset_index(drop=True)
+X_train = np.array(df2.iloc[:, :-1])
+y_train = df2.iloc[:, -1]
+X_test = np.array(df3.iloc[:, :-1])
+y_test = df3.iloc[:, -1]
+
+
+
+#PCA---
+
+#need to normalise the data first---
+
+
+scaler = StandardScaler()
+# Fit the scalar on training set only.
+scaler.fit(X_train)
+# Apply transform to both the training set and the test set.
+X_train = scaler.transform(X_train)
+X_test = scaler.transform(X_test)
+
+
+pca = PCA(.95)  #preserving 95% of total variance
+X_train = pca.fit_transform(X_train)
+X_test = pca.transform(X_test)
+
+
+#Printing out number of components of PCA
+print(pca.n_components_)
+
+#Printing out ratio of variance explained by each component
+print(pca.explained_variance_ratio_)
+
+
+
+#Visualizing PCA
+#We will visualize only the first 2 principle components out of 8 components
+
+pca_visual = PCA(n_components=2)
+pca_data = pca_visual.fit_transform(X_train)
+pca_data = np.vstack((pca_data.T,y_train)).T
+
+pca_df = pd.DataFrame(data=pca_data,columns=("First_Principle","Second_Principle","Segmentation"))
+sn.FacetGrid(pca_df,hue="Segmentation").map(plt.scatter, 'First_Principle','Second_Principle').add_legend()
+
+plt.savefig('pca.png')
+
+
+#Model accuracy with PCA ---
+
+#5-Fold cross validation
+
+folds = StratifiedKFold(n_splits = 5)
+accuracy_scores = []
+X = np.array(occupation.iloc[:, :-1])
+Y = np.array(occupation.iloc[:, -1])
+
+for train_index, test_index in folds.split(X, Y):
+    X_train, X_test = X[train_index], X[test_index]
+    y_train, y_test = Y[train_index], Y[test_index]
+    #normalise the data
+    scaler = StandardScaler()
+    # Fit the scalar on training set only.
+    scaler.fit(X_train)
+    # Apply transform to both the training set and the test set.
+    X_train = scaler.transform(X_train)
+    X_test = scaler.transform(X_test)
+    pca = PCA(.95)  # preserving 95% of total variance
+    X_train = pca.fit_transform(X_train)
+    X_test = pca.transform(X_test)
+    accuracy_scores.append(return_score(NaiveBayesClassifier(), X_train, y_train, X_test, y_test))
+
+print("The final test accuracy after performing 5 fold cross validation with PCA is {} %.".
+      format(round(statistics.mean(accuracy_scores)*100,2)))
