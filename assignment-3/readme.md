@@ -1,0 +1,1 @@
+### The file svm.py contains task 1 and mlp.py contains task 2. Please install pandas, numpy, statistics, scipy, sklearn, matplotlib so that the program runs smoothly.
